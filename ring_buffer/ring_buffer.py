@@ -1,5 +1,4 @@
 from doubly_linked_list import DoublyLinkedList
-import _collections
 
 
 class RingBuffer:
@@ -7,26 +6,44 @@ class RingBuffer:
         self.capacity = capacity
         self.current = None
         self.storage = DoublyLinkedList()
-        self.cache = _collections.OrderedDict()
 
     def append(self, item):
-        try:
-            # pop the item off
-            value = self.cache.pop(item)
-            # set value to the front
-            #  1,2,3,4 will become 4,1,2,3
-            self.cache[item] = value
-            return value
-        # KeyError happens when item is not in dictionary
-        except KeyError:
-            return None
+        if self.current is None:
+            self.current = 1
+
+        if self.storage.length == self.capacity:
+            if self.current is 1:
+                self.storage.remove_from_head()
+                self.storage.add_to_head(item)
+                self.current += 1
+            elif self.current is 2:
+                self.storage.head.next.insert_after(item)
+                self.storage.head.next.delete()
+                self.current += 1
+            elif self.current is 3:
+                self.storage.head.next.next.insert_after(item)
+                self.storage.head.next.next.delete()
+                self.current += 1
+            elif self.current is 4:
+                self.storage.tail.prev.insert_before(item)
+                self.storage.tail.prev.delete()
+                self.current += 1
+            elif self.current is 5:
+                self.storage.remove_from_tail()
+                self.storage.add_to_tail(item)
+                self.current = 1
+
+        else:
+            self.storage.add_to_tail(item)
 
     def get(self):
         # Note:  This is the only [] allowed
         list_buffer_contents = []
-
         # TODO: Your code here
-        list_buffer_contents.append(self.cache)
+        node = self.storage.head
+        while node:
+            list_buffer_contents.append(node.value)
+            node = node.next
 
         return list_buffer_contents
 
